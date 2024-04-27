@@ -3,7 +3,7 @@
 # RU: https://cloud.yandex.ru/docs/managed-mysql/tutorials/data-migration
 # EN: https://cloud.yandex.com/en/docs/managed-mysql/tutorials/data-migration
 #
-# Set source and target clusters settings.
+# Set source and target clusters settings
 locals {
   # Source cluster settings:
   source_user    = ""   # Set the source cluster username
@@ -13,7 +13,7 @@ locals {
   source_port    = 3306 # Set the source cluster port number that Data Transfer will use for connections
 
   # Target cluster settings:
-  target_mysql_version = "" # Set MySQL version. It must be the same or higher than the version in the source cluster
+  target_mysql_version = "" # Set MySQL version. It must be the same or higher than the version in the source cluster.
   target_sql_mode      = "" # Set the MySQL SQL mode. It must be the same as in the source cluster.
   target_db_name       = "" # Set the target cluster database name
   target_user          = "" # Set the target cluster username
@@ -22,8 +22,9 @@ locals {
   # The following settings are predefined. Change them only if necessary.
   network_name               = "network"                                        # Name of the network
   subnet_name                = "subnet-a"                                       # Name of the subnet
-  zone_a_v4_cidr_blocks      = "10.1.0.0/16"                                    # Set the CIDR block for subnet in the ru-central1-a availability zone
-  mysql_target_endpoint_name = "mysql-source"                                   # Name of the target endpoint for the MySQL cluster
+  zone_a_v4_cidr_blocks      = "10.1.0.0/16"                                    # CIDR block for subnet in the ru-central1-a availability zone
+  target_cluster_name        = "mysql-cluster"                                  # Name of the Managed Service for MySQL cluster
+  mysql_source_endpoint_name = "mysql-source"                                   # Name of the source endpoint for the MySQL cluster
   mmy_target_endpoint_name   = "managed-mysql-target"                           # Name of the target endpoint for the Managed Service for MySQL cluster
   transfer_name              = "transfer-from-onpremise-mysql-to-managed-mysql" # Name of the transfer from MySQL cluster to the Managed Service for MySQL cluster
 }
@@ -59,7 +60,7 @@ resource "yandex_vpc_security_group" "security-group" {
 
 resource "yandex_mdb_mysql_cluster" "mysql-cluster" {
   description        = "Managed Service for MySQL cluster"
-  name               = "mysql-cluster"
+  name               = local.target_cluster_name
   environment        = "PRODUCTION"
   network_id         = yandex_vpc_network.network.id
   version            = local.target_mysql_version
@@ -105,7 +106,7 @@ resource "yandex_mdb_mysql_user" "mysql-user" {
 
 resource "yandex_datatransfer_endpoint" "mysql-source" {
   description = "Source endpoint for MySQL cluster"
-  name        = local.mysql_target_endpoint_name
+  name        = local.mysql_source_endpoint_name
   settings {
     mysql_source {
       connection {
